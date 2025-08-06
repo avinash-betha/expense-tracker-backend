@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environment
+venv/
+ENV/
+env/
+.venv/
+
+# Environment variables
+.env
+
+# Flask / Gunicorn log files
+*.log
+
+# Output files
+outputbase.txt
+
+# VS Code settings
+.vscode/
+
+# macOS & Windows system files
+.DS_Store
+Thumbs.db
+
+# PyInstaller
+*.spec
+
+# Coverage / Testing
+.coverage
+htmlcov/
+.tox/
+.cache/
+
+# Python dependency files
+pip-wheel-metadata/
+*.egg-info/
+dist/
+build/
