@@ -17,7 +17,6 @@ api = Blueprint('api', __name__)
 @api.route('/upload', methods=['POST'])
 def upload_receipt():
     try:
-        # Check if image exists
         if 'image' not in request.files:
             return jsonify({"error": "No image uploaded"}), 400
 
@@ -25,23 +24,18 @@ def upload_receipt():
         if image.filename == '':
             return jsonify({"error": "Invalid image filename"}), 400
 
-        # Ensure upload folder exists
         os.makedirs(Config.UPLOAD_FOLDER, exist_ok=True)
 
-        # Save image
         filename = secure_filename(image.filename)
         save_path = os.path.join(Config.UPLOAD_FOLDER, filename)
         image.save(save_path)
 
-        # Run OCR + parse
         text = extract_text_from_image(save_path)
         parsed = parse_receipt_data(text)
 
-        # Get extra form fields
         purpose = request.form.get('purpose', 'General')
         category = request.form.get('category', 'Misc')
 
-        # Create expense entry
         expense = Expense(
             store=parsed.get('store'),
             total_amount=parsed.get('total'),
@@ -66,8 +60,8 @@ def upload_receipt():
 @api.route('/expenses', methods=['GET'])
 def get_expenses():
     try:
-        sort_by = request.args.get('sort', 'date')  # ?sort=amount
-        order = request.args.get('order', 'desc')   # ?order=asc
+        sort_by = request.args.get('sort', 'date')
+        order = request.args.get('order', 'desc')
 
         query = Expense.query
 
@@ -96,14 +90,19 @@ def export_csv():
         return jsonify({"error": str(e)}), 500
 
 # ============================
-# 4. Get Chart Data
+# 4. Get Chart Data (Monthly / Category)
 # ============================
 @api.route('/chart', methods=['GET'])
 def chart_data():
     try:
-        mode = request.args.get('mode', 'monthly')  # ?mode=category
+        mode = request.args.get('mode', 'monthly').lower()
+
+        if mode not in ['monthly', 'category']:
+            return jsonify({"error": "Invalid mode. Use 'monthly' or 'category'."}), 400
+
         data = get_chart_data(mode)
         return jsonify(data)
+
     except Exception as e:
         print("🔥 Error in /chart:", str(e))
         return jsonify({"error": str(e)}), 500
