@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify, send_file
+from flask import send_from_directory
 from werkzeug.utils import secure_filename
 from app.models import Expense
 from app.ocr_utils import extract_text_from_image, parse_receipt_data
@@ -105,4 +106,21 @@ def chart_data():
 
     except Exception as e:
         print("🔥 Error in /chart:", str(e))
+        return jsonify({"error": str(e)}), 500
+
+
+# ============================
+# 5. Download Receipt by Filename
+# ============================
+@api.route('/download/<filename>', methods=['GET'])
+def download_receipt(filename):
+    try:
+        file_path = os.path.join(Config.UPLOAD_FOLDER, filename)
+
+        if not os.path.exists(file_path):
+            return jsonify({"error": "File not found"}), 404
+
+        return send_from_directory(Config.UPLOAD_FOLDER, filename, as_attachment=True)
+    except Exception as e:
+        print("🔥 Error in /download:", str(e))
         return jsonify({"error": str(e)}), 500
